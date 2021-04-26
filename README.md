@@ -5,8 +5,10 @@ An Android app to download content from facebook,instagram,whatsapp.
 
 Download facebook videos
 
-Instagram
+**Instagram**
+
 Download Instagram images and videos
 
-Whatsapp
+**Whatsapp**
+
 Download whatsapp statuses
