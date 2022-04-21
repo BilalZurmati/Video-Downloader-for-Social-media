@@ -1,5 +1,7 @@
 package com.socialdownloader.fragments.fb;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -9,6 +11,7 @@ import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -46,6 +49,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.socialdownloader.Common.Common;
 import com.socialdownloader.R;
+import com.socialdownloader.databinding.FacebookFragmentBinding;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -60,12 +64,7 @@ import java.util.HashMap;
 
 public class FacebookFragment extends Fragment {
 
-
-    Button btnPaste, btnDownload;
-    EditText edtLink;
-    WebView webView;
-    LinearLayout mainLayout;
-    File file;
+    private FacebookFragmentBinding _binder;
 
     public static FacebookFragment newInstance() {
         return new FacebookFragment();
@@ -74,40 +73,30 @@ public class FacebookFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.facebook_fragment, container, false);
+        _binder = FacebookFragmentBinding.inflate(getLayoutInflater(), container, false);
 
-        initViews(root);
         setClickListeners();
 
-        return root;
+        return _binder.getRoot();
     }
 
     private void setClickListeners() {
-        btnPaste.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
+        _binder.btnPasteFacebook.setOnClickListener(view -> {
+            ClipboardManager clipboard = (ClipboardManager) requireActivity().getSystemService(CLIPBOARD_SERVICE);
+            _binder.edtLink.setText(clipboard.getPrimaryClip().getItemAt(0).getText());
         });
-        btnDownload.setOnClickListener(view -> {
-            if (!TextUtils.isEmpty(edtLink.getText().toString())) {
-                mainLayout.setVisibility(View.GONE);
-                webView.setVisibility(View.VISIBLE);
-                webProp(webView, getContext(), edtLink.getText().toString());
+        _binder.btnDownloadFacebook.setOnClickListener(view -> {
+            if (!TextUtils.isEmpty(_binder.edtLink.getText().toString())) {
+                _binder.top.setVisibility(View.GONE);
+                _binder.webViewSearched.setVisibility(View.VISIBLE);
+                webProp(_binder.webViewSearched, _binder.edtLink.getText().toString());
             } else {
-                edtLink.setError("Paste link first");
-                edtLink.requestFocus();
+                _binder.edtLink.setError("Paste link first");
+                _binder.edtLink.requestFocus();
             }
         });
     }
 
-    private void initViews(View root) {
-        btnDownload = root.findViewById(R.id.btn_download_facebook);
-        btnPaste = root.findViewById(R.id.btn_paste_facebook);
-        edtLink = root.findViewById(R.id.edt_link);
-        webView = root.findViewById(R.id.webViewSearched);
-        mainLayout = root.findViewById(R.id.top);
-    }
 
     BroadcastReceiver onComplete = new BroadcastReceiver() {
         @Override
@@ -125,25 +114,27 @@ public class FacebookFragment extends Fragment {
                     .getExternalStorageDirectory()
                     + File.separator
                     + Common.SAVED_FILE_NAME + File.separator;
+
+
             if (!new File(mBaseFolderPath).exists()) {
-                new File(mBaseFolderPath).mkdir();
+                new File(mBaseFolderPath).mkdirs();
             }
             String mFilePath = "file://" + mBaseFolderPath + "/" + "Facebook " + System.currentTimeMillis() + ".mp4";
 
             DownloadManager.Request req = new DownloadManager.Request(downloadUri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                req.setDestinationInExternalFilesDir(getContext(), Environment.DIRECTORY_DOWNLOADS, mFilePath);
+                req.setDestinationInExternalFilesDir(requireContext(), Environment.DIRECTORY_DOWNLOADS, mFilePath);
             } else {
                 req.setDestinationUri(Uri.parse(mFilePath));
             }
 
             req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            DownloadManager dm = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager dm = (DownloadManager) requireActivity().getSystemService(Context.DOWNLOAD_SERVICE);
             dm.enqueue(req);
-            Toast.makeText(getContext(), "Download Started", Toast.LENGTH_LONG).show();
-            getActivity().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+            Toast.makeText(requireContext(), "Download Started", Toast.LENGTH_LONG).show();
+            requireActivity().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
         } catch (Exception e) {
-            Toast.makeText(getContext(), "Download Failed: " + e.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Download Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -177,29 +168,27 @@ public class FacebookFragment extends Fragment {
     }
 
     private void checkPermission(String finalUrl, AlertDialog dialog) {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             dialog.dismiss();
             downloadVideo(finalUrl);
         } else {
             dialog.dismiss();
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 111);
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 111);
         }
 
     }
 
     @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
-    public void webProp(WebView mwebview, Context context, String url) {
-        mwebview.getSettings().setDisplayZoomControls(false);
-        mwebview.addJavascriptInterface(this, "mJava");
-        mwebview.getSettings().setJavaScriptEnabled(true);
-        mwebview.getSettings().setLoadWithOverviewMode(true);
-        mwebview.getSettings().setUseWideViewPort(true);
-        mwebview.getSettings().setLoadWithOverviewMode(true);
-        mwebview.getSettings().setUseWideViewPort(true);
-        mwebview.getSettings().setBuiltInZoomControls(true);
-        mwebview.getSettings().setPluginState(WebSettings.PluginState.ON);
+    public void webProp(WebView mWebView, String url) {
+        mWebView.getSettings().setDisplayZoomControls(false);
+        mWebView.addJavascriptInterface(this, "mJava");
+        mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.getSettings().setLoadWithOverviewMode(true);
+        mWebView.getSettings().setUseWideViewPort(true);
+        mWebView.getSettings().setBuiltInZoomControls(true);
+        mWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
 
-        mwebview.setWebViewClient(new WebViewClient() {
+        mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (url.startsWith("http") || url.startsWith("https")) {
@@ -210,7 +199,7 @@ public class FacebookFragment extends Fragment {
                         Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
                         String fallbackUrl = intent.getStringExtra("browser_fallback_url");
                         if (fallbackUrl != null) {
-                            mwebview.loadUrl(fallbackUrl);
+                            mWebView.loadUrl(fallbackUrl);
                             return true;
                         }
                     } catch (URISyntaxException e) {
@@ -222,146 +211,29 @@ public class FacebookFragment extends Fragment {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                mwebview.loadUrl("javascript:" +
-                        "var e=0;\n" +
-                        "window.onscroll=function()\n" +
-                        "{\n" +
-                        "\tvar ij=document.querySelectorAll(\"video\");\n" +
-                        "\t\tfor(var f=0;f<ij.length;f++)\n" +
-                        "\t\t{\n" +
-                        "\t\t\tif((ij[f].parentNode.querySelectorAll(\"img\")).length==0)\n" +
-                        "\t\t\t{\n" +
-                        "\t\t\t\tvar nextimageWidth=ij[f].nextSibling.style.width;\n" +
-                        "\t\t\t\tvar nextImageHeight=ij[f].nextSibling.style.height;\n" +
-                        "\t\t\t\tvar Nxtimgwd=parseInt(nextimageWidth, 10);\n" +
-                        "\t\t\t\tvar Nxtimghght=parseInt(nextImageHeight, 10); \n" +
-                        "\t\t\t\tvar DOM_img = document.createElement(\"img\");\n" +
-                        "\t\t\t\t\tDOM_img.height=\"68\";\n" +
-                        "\t\t\t\t\tDOM_img.width=\"68\";\n" +
-                        "\t\t\t\t\tDOM_img.style.top=(Nxtimghght/2-20)+\"px\";\n" +
-                        "\t\t\t\t\tDOM_img.style.left=(Nxtimgwd/2-20)+\"px\";\n" +
-                        "\t\t\t\t\tDOM_img.style.position=\"absolute\";\n" +
-                        "\t\t\t\t\tDOM_img.src = \"https://image.ibb.co/kobwsk/one.png\"; \n" +
-                        "\t\t\t\t\tij[f].parentNode.appendChild(DOM_img);\n" +
-                        "\t\t\t}\t\t\n" +
-                        "\t\t\tij[f].remove();\n" +
-                        "\t\t} \n" +
-                        "\t\t\te++;\n" +
-                        "};" +
-                        "var a = document.querySelectorAll(\"a[href *= 'video_redirect']\");\n" +
-                        "for (var i = 0; i < a.length; i++) {\n" +
-                        "    var mainUrl = a[i].getAttribute(\"href\");\n" +
-                        "  a[i].removeAttribute(\"href\");\n" +
-                        "\tmainUrl=mainUrl.split(\"/video_redirect/?src=\")[1];\n" +
-                        "\tmainUrl=mainUrl.split(\"&source\")[0];\n" +
-                        "    var threeparent = a[i].parentNode.parentNode.parentNode;\n" +
-                        "    threeparent.setAttribute(\"src\", mainUrl);\n" +
-                        "    threeparent.onclick = function() {\n" +
-                        "        var mainUrl1 = this.getAttribute(\"src\");\n" +
-                        "         mJava.getData(mainUrl1);\n" +
-                        "    };\n" +
-                        "}" +
-                        "var k = document.querySelectorAll(\"div[data-store]\");\n" +
-                        "for (var j = 0; j < k.length; j++) {\n" +
-                        "    var h = k[j].getAttribute(\"data-store\");\n" +
-                        "    var g = JSON.parse(h);\nvar jp=k[j].getAttribute(\"data-sigil\");\n" +
-                        "    if (g.type === \"video\") {\n" +
-                        "if(jp==\"inlineVideo\")" +
-                        "{" +
-                        "   k[j].removeAttribute(\"data-sigil\");" +
-                        "}\n" +
-                        "        var url = g.src;\n" +
-                        "        k[j].setAttribute(\"src\", g.src);\n" +
-                        "        k[j].onclick = function() {\n" +
-                        "            var mainUrl = this.getAttribute(\"src\");\n" +
-                        "               mJava.getData(mainUrl);\n" +
-                        "        };\n" +
-                        "    }\n" +
-                        "\n" +
-                        "}");
+                mWebView.loadUrl(linkScript());
             }
 
-//            public void onLoadResource(WebView view, String url) {
-//                mwebview.loadUrl("javascript:" +
-//                        "var e=document.querySelectorAll(\"span\"); " +
-//                        "if(e[0]!=undefined)" +
-//                        "{" +
-//                        "var fbforandroid=e[0].innerText;" +
-//                        "if(fbforandroid.indexOf(\"Facebook\")!=-1)" +
-//                        "{ " +
-//                        "var h =e[0].parentNode.parentNode.parentNode.style.display=\"none\";" +
-//                        "} " +
-//                        "}" +
-//                        "var installfb=document.querySelectorAll(\"a\");\n" +
-//                        "for (var hardwares = 0; hardwares < installfb.length; hardwares++) \n" +
-//                        "{\n" +
-//                        "\tif(installfb[hardwares].text.indexOf(\"Install\")!=-1)\n" +
-//                        "\t{\n" +
-//                        "\t\tvar soft=installfb[hardwares].parentNode.style.display=\"none\";\n" +
-//                        "\n" +
-//                        "\t}\n" +
-//                        "}\n");
-//                mwebview.loadUrl("javascript:" +
-//                        "var e=0;\n" +
-//                        "window.onscroll=function()\n" +
-//                        "{\n" +
-//                        "\tvar ij=document.querySelectorAll(\"video\");\n" +
-//                        "\t\tfor(var f=0;f<ij.length;f++)\n" +
-//                        "\t\t{\n" +
-//                        "\t\t\tif((ij[f].parentNode.querySelectorAll(\"img\")).length==0)\n" +
-//                        "\t\t\t{\n" +
-//                        "\t\t\t\tvar nextimageWidth=ij[f].nextSibling.style.width;\n" +
-//                        "\t\t\t\tvar nextImageHeight=ij[f].nextSibling.style.height;\n" +
-//                        "\t\t\t\tvar Nxtimgwd=parseInt(nextimageWidth, 10);\n" +
-//                        "\t\t\t\tvar Nxtimghght=parseInt(nextImageHeight, 10); \n" +
-//                        "\t\t\t\tvar DOM_img = document.createElement(\"img\");\n" +
-//                        "\t\t\t\t\tDOM_img.height=\"68\";\n" +
-//                        "\t\t\t\t\tDOM_img.width=\"68\";\n" +
-//                        "\t\t\t\t\tDOM_img.style.top=(Nxtimghght/2-20)+\"px\";\n" +
-//                        "\t\t\t\t\tDOM_img.style.left=(Nxtimgwd/2-20)+\"px\";\n" +
-//                        "\t\t\t\t\tDOM_img.style.position=\"absolute\";\n" +
-//                        "\t\t\t\t\tDOM_img.src = \"https://image.ibb.co/kobwsk/one.png\"; \n" +
-//                        "\t\t\t\t\tij[f].parentNode.appendChild(DOM_img);\n" +
-//                        "\t\t\t}\t\t\n" +
-//                        "\t\t\tij[f].remove();\n" +
-//                        "\t\t} \n" +
-//                        "\t\t\te++;\n" +
-//                        "};" +
-//                        "var a = document.querySelectorAll(\"a[href *= 'video_redirect']\");\n" +
-//                        "for (var i = 0; i < a.length; i++) {\n" +
-//                        "    var mainUrl = a[i].getAttribute(\"href\");\n" +
-//                        "  a[i].removeAttribute(\"href\");\n" +
-//                        "\tmainUrl=mainUrl.split(\"/video_redirect/?src=\")[1];\n" +
-//                        "\tmainUrl=mainUrl.split(\"&source\")[0];\n" +
-//                        "    var threeparent = a[i].parentNode.parentNode.parentNode;\n" +
-//                        "    threeparent.setAttribute(\"src\", mainUrl);\n" +
-//                        "    threeparent.onclick = function() {\n" +
-//                        "        var mainUrl1 = this.getAttribute(\"src\");\n" +
-//                        "         mJava.getData(mainUrl1);\n" +
-//                        "    };\n" +
-//                        "}" +
-//                        "var k = document.querySelectorAll(\"div[data-store]\");\n" +
-//                        "for (var j = 0; j < k.length; j++) {\n" +
-//                        "    var h = k[j].getAttribute(\"data-store\");\n" +
-//                        "    var g = JSON.parse(h);var jp=k[j].getAttribute(\"data-sigil\");\n" +
-//                        "    if (g.type === \"video\") {\n" +
-//                        "if(jp==\"inlineVideo\")" +
-//                        "{" +
-//                        "   k[j].removeAttribute(\"data-sigil\");" +
-//                        "}\n" +
-//                        "        var url = g.src;\n" +
-//                        "        k[j].setAttribute(\"src\", g.src);\n" +
-//                        "        k[j].onclick = function() {\n" +
-//                        "            var mainUrl = this.getAttribute(\"src\");\n" +
-//                        "               mJava.getData(mainUrl);\n" +
-//                        "        };\n" +
-//                        "    }\n" +
-//                        "\n" +
-//                        "}");
-//            }
+            public void onLoadResource(WebView view, String url) {
+                mWebView.loadUrl(linkScript());
+            }
         });
 
-        mwebview.loadUrl(url);
+        mWebView.loadUrl(url);
+    }
+
+
+    private String linkScript() {
+        return "javascript:(function() { "
+                + "var el = document.querySelectorAll('div[data-sigil]');"
+                + "for(var i=0;i<el.length; i++)"
+                + "{"
+                + "var sigil = el[i].dataset.sigil;"
+                + "if(sigil.indexOf('inlineVideo') > -1){"
+                + "delete el[i].dataset.sigil;"
+                + "var jsonData = JSON.parse(el[i].dataset.store);"
+                + "el[i].setAttribute('onClick', 'mJava.getData(\"'+jsonData['src']+'\");');"
+                + "}" + "}" + "})()";
     }
 
 

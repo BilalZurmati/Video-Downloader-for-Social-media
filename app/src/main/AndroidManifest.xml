@@ -16,7 +16,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SocialDownloader">
         <activity android:name=".activities.MainActivity"/>
-        <activity android:name=".SplashActivity">
+        <activity android:name=".SplashActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
