@@ -35,6 +35,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -219,6 +221,10 @@ public class FacebookFragment extends Fragment {
             }
         });
 
+        CookieSyncManager.createInstance(requireContext());
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        CookieSyncManager.getInstance().startSync();
         mWebView.loadUrl(url);
     }
 
