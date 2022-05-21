@@ -20,9 +20,11 @@
             android:layout_marginRight="10dp"
             android:layout_marginBottom="10dp"
             android:background="@color/light_gray"
-            android:elevation="8dp">
+            app:elevation="8dp">
 
             <EditText
+                android:background="@android:color/transparent"
+                android:inputType="text"
                 android:id="@+id/edt_link"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

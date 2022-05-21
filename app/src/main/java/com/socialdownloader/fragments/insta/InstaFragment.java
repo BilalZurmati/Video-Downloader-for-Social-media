@@ -47,9 +47,6 @@ public class InstaFragment extends Fragment {
     EditText edtLink;
     AlertDialog alertDialog;
 
-    public static InstaFragment newInstance() {
-        return new InstaFragment();
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
