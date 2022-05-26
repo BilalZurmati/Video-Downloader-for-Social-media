@@ -3,11 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/aminu/StudioProjects/Social_Downloader/app/src/main/res/layout/facebook_fragment.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/aminu/StudioProjects/Social_Downloader/app/src/main/res/layout/layout_download_dialog.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/ppp/AndroidStudioProjects/Social_Downloader/app/src/main/res/layout/facebook_fragment.xml" value="0.33" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

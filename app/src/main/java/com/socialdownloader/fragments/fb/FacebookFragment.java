@@ -1,6 +1,5 @@
 package com.socialdownloader.fragments.fb;
 
-import static android.content.Context.CLIPBOARD_SERVICE;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -9,28 +8,21 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.media.MediaMetadataRetriever;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,28 +33,17 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.socialdownloader.Common.Common;
 import com.socialdownloader.R;
 import com.socialdownloader.databinding.FacebookFragmentBinding;
 
-import java.io.BufferedInputStream;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashMap;
 
 public class FacebookFragment extends Fragment {
 
@@ -77,26 +58,10 @@ public class FacebookFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         _binder = FacebookFragmentBinding.inflate(getLayoutInflater(), container, false);
 
-        setClickListeners();
+        webProp(_binder.webViewSearched);
+
 
         return _binder.getRoot();
-    }
-
-    private void setClickListeners() {
-        _binder.btnPasteFacebook.setOnClickListener(view -> {
-            ClipboardManager clipboard = (ClipboardManager) requireActivity().getSystemService(CLIPBOARD_SERVICE);
-            _binder.edtLink.setText(clipboard.getPrimaryClip().getItemAt(0).getText());
-        });
-        _binder.btnDownloadFacebook.setOnClickListener(view -> {
-            if (!TextUtils.isEmpty(_binder.edtLink.getText().toString())) {
-                _binder.top.setVisibility(View.GONE);
-                _binder.webViewSearched.setVisibility(View.VISIBLE);
-                webProp(_binder.webViewSearched, _binder.edtLink.getText().toString());
-            } else {
-                _binder.edtLink.setError("Paste link first");
-                _binder.edtLink.requestFocus();
-            }
-        });
     }
 
 
@@ -110,8 +75,9 @@ public class FacebookFragment extends Fragment {
 
 
     public void downloadVideo(final String url) {
-        Uri downloadUri = Uri.parse(url);
+
         try {
+            Uri downloadUri = Uri.parse(url);
             String mBaseFolderPath = android.os.Environment
                     .getExternalStorageDirectory()
                     + File.separator
@@ -141,32 +107,57 @@ public class FacebookFragment extends Fragment {
     }
 
     @JavascriptInterface
-    public void getData(final String pathVideo) {
+    public void getData(final String json) {
+        try {
+            JSONObject jsonObject = new JSONObject(json);
 
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.layout_download_dialog, null, false);
-        AlertDialog.Builder downloadDialog = new AlertDialog.Builder(getContext());
-        downloadDialog.setView(dialogView);
-        downloadDialog.setCancelable(true);
-        AlertDialog dialog = downloadDialog.create();
-        dialog.show();
 
-        LinearLayout btnDownload = dialogView.findViewById(R.id.download);
+            String videoUrl = jsonObject.getString("src");
+            videoUrl = videoUrl.replaceAll("%3A", ":");
+            videoUrl = videoUrl.replaceAll("%2F", "/");
+            videoUrl = videoUrl.replaceAll("%3F", "?");
+            videoUrl = videoUrl.replaceAll("%3D", "=");
+            videoUrl = videoUrl.replaceAll("%26", "&");
 
-        btnDownload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String finalUrl;
-                finalUrl = pathVideo;
-                finalUrl = finalUrl.replaceAll("%3A", ":");
-                finalUrl = finalUrl.replaceAll("%2F", "/");
-                finalUrl = finalUrl.replaceAll("%3F", "?");
-                finalUrl = finalUrl.replaceAll("%3D", "=");
-                finalUrl = finalUrl.replaceAll("%26", "&");
+            final String finalUrl = videoUrl;
 
-                //first check permissions
-                checkPermission(finalUrl, dialog);
-            }
-        });
+
+            _binder.downloadFab.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.black, null));
+
+            _binder.downloadFab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(requireContext(), finalUrl, Toast.LENGTH_SHORT).show();
+                    Log.i("MyKey", "getData: " + finalUrl);  //video url
+                }
+            });
+
+
+//            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.layout_download_dialog, null, false);
+//            AlertDialog.Builder downloadDialog = new AlertDialog.Builder(getContext());
+//            downloadDialog.setView(dialogView);
+//            downloadDialog.setCancelable(true);
+//            AlertDialog dialog = downloadDialog.create();
+//            dialog.show();
+//
+//            LinearLayout btnDownload = dialogView.findViewById(R.id.download);
+//            ImageView imageThumbnail = dialogView.findViewById(R.id.thumbnail);
+//            Glide.with(requireActivity()).load(finalUrl)
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .into(imageThumbnail);
+//
+//            btnDownload.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    //first check permissions
+//                    checkPermission(finalUrl, dialog);
+//                }
+//            });
+
+
+        } catch (JSONException e) {
+            Log.i("MyException", "getData: " + e.getMessage());
+        }
     }
 
     private void checkPermission(String finalUrl, AlertDialog dialog) {
@@ -181,7 +172,7 @@ public class FacebookFragment extends Fragment {
     }
 
     @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
-    public void webProp(WebView mWebView, String url) {
+    public void webProp(WebView mWebView) {
         mWebView.getSettings().setDisplayZoomControls(false);
         mWebView.addJavascriptInterface(this, "mJava");
         mWebView.getSettings().setJavaScriptEnabled(true);
@@ -213,11 +204,11 @@ public class FacebookFragment extends Fragment {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                mWebView.loadUrl(linkScript());
+                mWebView.loadUrl(playScript());
             }
 
             public void onLoadResource(WebView view, String url) {
-                mWebView.loadUrl(linkScript());
+//                mWebView.loadUrl(playScript());
             }
         });
 
@@ -225,10 +216,11 @@ public class FacebookFragment extends Fragment {
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         CookieSyncManager.getInstance().startSync();
-        mWebView.loadUrl(url);
+        mWebView.loadUrl("https://www.facebook.com/");
     }
 
 
+    //doesn't requires user to be logged in but won't work on devices above android 10
     private String linkScript() {
         return "javascript:(function() { "
                 + "var el = document.querySelectorAll('div[data-sigil]');"
@@ -240,6 +232,20 @@ public class FacebookFragment extends Fragment {
                 + "var jsonData = JSON.parse(el[i].dataset.store);"
                 + "el[i].setAttribute('onClick', 'mJava.getData(\"'+jsonData['src']+'\");');"
                 + "}" + "}" + "})()";
+    }
+
+    //Works on all devices but requires user to log in to web view
+    private String playScript() {
+        return "javascript:(function() {" +
+                "document.addEventListener(\"play\",(e)=>{\n" +
+                "var videos = document.querySelectorAll(\"video\");\n" +
+                "videos.forEach((el)=>{\n" +
+                "var parentElement = el.parentElement;\n" +
+                "var data = parentElement.getAttribute(\"data-store\");\n" +
+                "mJava.getData(data.toString());\n" +
+                "})\n" +
+                "},true)" +
+                "})()";
     }
 
 

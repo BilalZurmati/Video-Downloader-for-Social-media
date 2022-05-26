@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="5dp"
     android:orientation="vertical">
 
     <LinearLayout
@@ -9,15 +11,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
+        <ImageView
+            android:id="@+id/thumbnail"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="50dp"
-            android:gravity="center"
-            android:text="An ad here"
-            android:textAllCaps="false"
-            android:textColor="@color/black"
-            android:textSize="20sp" />
+            android:layout_height="150dp"
+            android:layout_marginVertical="10dp"
+            android:contentDescription="image thumbnail"
+            android:gravity="center" />
 
         <LinearLayout
             android:id="@+id/download"
@@ -31,13 +31,13 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:background="@color/dark_gray"
-                android:drawableLeft="@drawable/ic_baseline_cloud_download_24"
                 android:drawablePadding="20dp"
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="@string/download"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="20sp"
+                app:drawableLeftCompat="@drawable/ic_baseline_cloud_download_24" />
         </LinearLayout>
 
     </LinearLayout>
