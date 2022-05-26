@@ -5,7 +5,7 @@ An Android app to download videos from Facebook , Instagram, Whatsapp Status dow
 
 Download facebook videos
 
-```User needs to be logged in to download videos from facebook```
+* User needs to be logged in to download videos from facebook
 
 **Instagram**
 
