@@ -6,8 +6,6 @@ import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.socialdownloader.Common.Common;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +13,7 @@ import java.util.List;
 public class WhatsAppViewModel extends ViewModel {
     private static final String WHATS_APP_STATUSES_LOCATION = "/WhatsApp/Media/.Statuses";
 
-    private MutableLiveData<List<File>> listMutableLiveData;
-    private MutableLiveData<String> errorMessage = new MutableLiveData<>();
-
-    public MutableLiveData<String> getErrorMessage() {
-        return errorMessage;
-    }
+    private MutableLiveData<List<File>> listMutableLiveData = new MutableLiveData<>();
 
     public MutableLiveData<List<File>> getListMutableLiveData() {
         if (listMutableLiveData == null) {
@@ -31,7 +24,7 @@ public class WhatsAppViewModel extends ViewModel {
     }
 
     public void loadImagesFromFile(File parentDir) {
-        ArrayList<File> inFiles = new ArrayList<File>();
+        ArrayList<File> inFiles = new ArrayList<>();
         File[] files;
         files = parentDir.listFiles();
         if (files != null) {

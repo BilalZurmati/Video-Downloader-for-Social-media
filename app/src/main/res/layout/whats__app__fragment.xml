@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".fragments.whats_app.Whats_App_Fragment">
+    tools:context=".fragments.whats_app.WhatsAppFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_whats_app"

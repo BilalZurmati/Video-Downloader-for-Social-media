@@ -5,8 +5,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
 
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +42,27 @@ public class Common {
         }
     }
 
+    public static String getFolderPath() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    + "/" + Common.SAVED_FILE_NAME;
+        else
+            return Environment.getExternalStorageDirectory()
+                    + "/" + Common.SAVED_FILE_NAME;
+    }
+
+    public static String getSizeInReadableForm(long bytes) {
+        if (-1000 < bytes && bytes < 1000) {
+            return bytes + " B";
+        }
+        CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+        while (bytes <= -999_950 || bytes >= 999_950) {
+            bytes /= 1000;
+            ci.next();
+        }
+        return String.format("%.1f %cB", bytes / 1000.0, ci.current());
+    }
+
     public static String getValidLink(String link) {
         String url;
         if (link.contains("?")) {
@@ -46,4 +71,6 @@ public class Common {
         } else
             return link;
     }
+
+
 }

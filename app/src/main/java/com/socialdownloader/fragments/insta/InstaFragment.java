@@ -64,8 +64,8 @@ public class InstaFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         mViewModel = new ViewModelProvider(this).get(InstaViewModel.class);
         // TODO: Use the ViewModel
 
@@ -80,7 +80,7 @@ public class InstaFragment extends Fragment {
             }
         });
         btnDownload.setOnClickListener(view -> {
-            if (Common.IsConnected(getActivity())) {
+            if (Common.IsConnected(requireActivity())) {
                 if (TextUtils.isEmpty(edtLink.getText().toString())) {
                     Toast.makeText(getContext(), "Paste your url first", Toast.LENGTH_SHORT).show();
                 } else if (!URLUtil.isValidUrl(edtLink.getText().toString())) {

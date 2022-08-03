@@ -1,10 +1,10 @@
 package com.socialdownloader.fragments.fb;
 
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import static com.socialdownloader.Common.Common.getFolderPath;
+import static com.socialdownloader.utils.AppUtil.isPermissionGranted;
+import static com.socialdownloader.utils.AppUtil.requestPermission;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
@@ -12,7 +12,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,9 +34,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.socialdownloader.Common.Common;
 import com.socialdownloader.R;
 import com.socialdownloader.databinding.FacebookFragmentBinding;
+import com.socialdownloader.databinding.LayoutDownloadDialogBinding;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,9 +51,6 @@ public class FacebookFragment extends Fragment {
 
     private FacebookFragmentBinding _binder;
 
-    public static FacebookFragment newInstance() {
-        return new FacebookFragment();
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -78,10 +77,7 @@ public class FacebookFragment extends Fragment {
 
         try {
             Uri downloadUri = Uri.parse(url);
-            String mBaseFolderPath = android.os.Environment
-                    .getExternalStorageDirectory()
-                    + File.separator
-                    + Common.SAVED_FILE_NAME + File.separator;
+            String mBaseFolderPath = getFolderPath() + File.separator;
 
 
             if (!new File(mBaseFolderPath).exists()) {
@@ -124,35 +120,11 @@ public class FacebookFragment extends Fragment {
 
             _binder.downloadFab.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.black, null));
 
-            _binder.downloadFab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(requireContext(), finalUrl, Toast.LENGTH_SHORT).show();
-                    Log.i("MyKey", "getData: " + finalUrl);  //video url
-                }
+            _binder.downloadFab.setOnClickListener(view -> {
+                Log.i("MyKey", "getData: " + finalUrl);  //video url
+
+                showDownloadDialog(finalUrl);
             });
-
-
-//            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.layout_download_dialog, null, false);
-//            AlertDialog.Builder downloadDialog = new AlertDialog.Builder(getContext());
-//            downloadDialog.setView(dialogView);
-//            downloadDialog.setCancelable(true);
-//            AlertDialog dialog = downloadDialog.create();
-//            dialog.show();
-//
-//            LinearLayout btnDownload = dialogView.findViewById(R.id.download);
-//            ImageView imageThumbnail = dialogView.findViewById(R.id.thumbnail);
-//            Glide.with(requireActivity()).load(finalUrl)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(imageThumbnail);
-//
-//            btnDownload.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    //first check permissions
-//                    checkPermission(finalUrl, dialog);
-//                }
-//            });
 
 
         } catch (JSONException e) {
@@ -160,16 +132,32 @@ public class FacebookFragment extends Fragment {
         }
     }
 
-    private void checkPermission(String finalUrl, AlertDialog dialog) {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            dialog.dismiss();
-            downloadVideo(finalUrl);
-        } else {
-            dialog.dismiss();
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 111);
-        }
+    private void showDownloadDialog(String finalUrl) {
+        LayoutDownloadDialogBinding dialogViewBinding = LayoutDownloadDialogBinding.inflate(getLayoutInflater());
+        AlertDialog.Builder downloadDialog = new AlertDialog.Builder(getContext());
+        downloadDialog.setView(dialogViewBinding.getRoot());
+        downloadDialog.setCancelable(true);
+        AlertDialog dialog = downloadDialog.create();
+        dialog.show();
 
+
+        Glide.with(requireActivity())
+                .load(finalUrl)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(dialogViewBinding.thumbnail);
+
+        dialogViewBinding.download.setOnClickListener(view -> {
+            //first check permissions
+            if (isPermissionGranted(requireContext()))
+                downloadVideo(finalUrl);
+            else
+                requestPermission(requireActivity(), 111);
+
+
+            dialog.dismiss();
+        });
     }
+
 
     @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
     public void webProp(WebView mWebView) {

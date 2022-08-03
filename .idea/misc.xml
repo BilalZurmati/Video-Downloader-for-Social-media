@@ -3,6 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/HP/StudioProjects/Social_Downloader/app/src/main/res/layout/activity_main.xml" value="0.2" />
+        <entry key="..\:/Users/HP/StudioProjects/Social_Downloader/app/src/main/res/layout/activity_splash.xml" value="0.22826086956521738" />
+        <entry key="..\:/Users/HP/StudioProjects/Social_Downloader/app/src/main/res/layout/downloads_fragment.xml" value="0.12360688956433637" />
+        <entry key="..\:/Users/HP/StudioProjects/Social_Downloader/app/src/main/res/layout/layout_download_dialog.xml" value="0.22826086956521738" />
+        <entry key="..\:/Users/HP/StudioProjects/Social_Downloader/app/src/main/res/layout/layout_download_item.xml" value="0.2" />
+        <entry key="..\:/Users/HP/StudioProjects/Social_Downloader/app/src/main/res/layout/layout_whatsapp_item.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/HP/StudioProjects/Social_Downloader/app/src/main/res/layout/whats__app__fragment.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/aminu/StudioProjects/Social_Downloader/app/src/main/res/layout/facebook_fragment.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/aminu/StudioProjects/Social_Downloader/app/src/main/res/layout/layout_download_dialog.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/ppp/AndroidStudioProjects/Social_Downloader/app/src/main/res/layout/facebook_fragment.xml" value="0.33" />

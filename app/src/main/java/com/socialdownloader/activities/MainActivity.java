@@ -3,6 +3,8 @@ package com.socialdownloader.activities;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.socialdownloader.R;
@@ -11,13 +13,18 @@ import com.socialdownloader.databinding.ActivityMainBinding;
 import com.socialdownloader.fragments.downloads.DownloadsFragment;
 import com.socialdownloader.fragments.fb.FacebookFragment;
 import com.socialdownloader.fragments.insta.InstaFragment;
-import com.socialdownloader.fragments.whats_app.Whats_App_Fragment;
+import com.socialdownloader.fragments.whats_app.WhatsAppFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     MyViewPagerAdapter myViewPagerAdapter;
 
     private ActivityMainBinding _binder;
+
+    public static void go(Activity activity) {
+        activity.startActivity(new Intent(activity, MainActivity.class));
+        activity.finish();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         myViewPagerAdapter = new MyViewPagerAdapter(getSupportFragmentManager());
         myViewPagerAdapter.addFragment(new FacebookFragment());
         myViewPagerAdapter.addFragment(new InstaFragment());
-        myViewPagerAdapter.addFragment(new Whats_App_Fragment());
+        myViewPagerAdapter.addFragment(new WhatsAppFragment());
         myViewPagerAdapter.addFragment(new DownloadsFragment());
 
         _binder.viewPager.setAdapter(myViewPagerAdapter);

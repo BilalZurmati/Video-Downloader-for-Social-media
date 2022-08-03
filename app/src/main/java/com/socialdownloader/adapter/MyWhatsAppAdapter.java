@@ -1,25 +1,21 @@
 package com.socialdownloader.adapter;
 
+import static com.socialdownloader.Common.Common.getFolderPath;
+
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Environment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.socialdownloader.Common.Common;
 import com.socialdownloader.R;
 
 import java.io.File;
@@ -38,7 +34,6 @@ public class MyWhatsAppAdapter extends RecyclerView.Adapter<MyWhatsAppAdapter.My
     public MyWhatsAppAdapter(Context context, List<File> fileList) {
         this.context = context;
         this.fileList = fileList;
-        setHasStableIds(true);
     }
 
     @NonNull
@@ -54,24 +49,17 @@ public class MyWhatsAppAdapter extends RecyclerView.Adapter<MyWhatsAppAdapter.My
 
         holder.imgDownload.setOnClickListener(this.downloadMediaItem(currentFile));
 
-        holder.imgShare.setOnClickListener(view -> {
-            shareFile(currentFile);
-        });
+        holder.imgShare.setOnClickListener(view -> shareFile(currentFile));
 
-        if (currentFile.getPath().endsWith(".mp4")) {
-            Glide.with(context).load(currentFile.getAbsoluteFile()).into(holder.imgWhatsapp);
-        } else {
-            Bitmap myBitmap = BitmapFactory.decodeFile(currentFile.getAbsolutePath());
-            Glide.with(context).load(myBitmap).into(holder.imgWhatsapp);
-        }
+
+        Glide.with(context).load(currentFile.getAbsoluteFile()).into(holder.imgWhatsapp);
     }
 
     public View.OnClickListener downloadMediaItem(final File sourceFile) {
 
         return v -> ((Runnable) () -> {
             try {
-                copyFile(sourceFile, new File(Environment.getExternalStorageDirectory()
-                        + "/" + Common.SAVED_FILE_NAME + File.separator + sourceFile.getName()));
+                copyFile(sourceFile, new File(getFolderPath() + File.separator + sourceFile.getName()));
                 Toast.makeText(context, "Saved successfully", Toast.LENGTH_SHORT).show();
 
             } catch (Exception e) {
@@ -140,7 +128,7 @@ public class MyWhatsAppAdapter extends RecyclerView.Adapter<MyWhatsAppAdapter.My
         return position;
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+    public static class MyViewHolder extends RecyclerView.ViewHolder {
         ImageView imgWhatsapp, imgDownload, imgShare;
 
         public MyViewHolder(@NonNull View itemView) {
